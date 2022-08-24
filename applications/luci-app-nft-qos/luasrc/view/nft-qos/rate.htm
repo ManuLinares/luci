@@ -6,8 +6,6 @@
 <%+header%>
 
 <script type="text/javascript">//<![CDATA[
-	var bwxhr = new XHR();
-
 	var RC = { };
 	var em = 0;
 	var ec = 1;
@@ -62,7 +60,28 @@
 				'%s Pkts.'.format(ra[i].packets),
 			]);
 		}
-		cbi_update_table(tbl, rs, '<em><%:No information available%></em>');
+		// cbi_update_table(tbl, rs, '<em><%:No information available%></em>');
+
+		/* BEGIN: Workaround as "cbi_update_table" isn't working */
+		rs.forEach((element, i) => {
+			var r = document.createElement("TR");
+			r.innerHTML = `
+				<tr>
+					<td>${element[0]}</th>
+					<td>${element[1]}</td>
+					<td>${element[2]}</td>
+					<td>${element[3]}</td>
+				</tr>
+					`;
+			if (i%2){
+				r.classList.add('tr', 'cbi-rowstyle-2');
+			} else {
+				r.classList.add('tr', 'cbi-rowstyle-1');
+			}
+			
+			tbl.appendChild(r)
+			/* END: Workaround as "cbi_update_table" isn't working */
+		});
 	} /* function print_table(tbl, ra) */
 
 	/* wait for SVG */
@@ -78,7 +97,7 @@
 				rate_table_ul     = document.getElementById('rate_table_ul');
 
 				/* render datasets, start update interval */
-				XHR.poll(3, '<%=build_url("admin/status/realtime/rate_status")%>', null,
+				L.Request.poll.add(3, '<%=build_url("admin/status/realtime/rate_status")%>', null,
 					function(x, json)
 					{
 						var RA = {};
@@ -114,13 +133,14 @@
 						}
 
 					} /* function(x, json) */
-				); /* XHR.poll() */
+				);
 
-				XHR.run();
+				L.Request.poll.start();
 			}
 		}, 1000
 	);
 //]]></script>
+
 
 <h2 name="content"><%:Realtime Rate%></h2>
 
@@ -136,11 +156,6 @@
 				<div class="th col-7"><%:Bytes Total%></div>
 				<div class="th col-7"><%:Packets Total%></div>
 			</div>
-			<div class="tr placeholder">
-				<div class="td">
-					<em><%:Collecting data...%></em>
-				</div>
-			</div>
 		</div>
 	</div>
 </fieldset>
@@ -154,11 +169,6 @@
 				<div class="th col-2"><%:Upload Rate%></div>
 				<div class="th col-7"><%:Bytes Total%></div>
 				<div class="th col-7"><%:Packets Total%></div>
-			</div>
-			<div class="tr placeholder">
-				<div class="td">
-					<em><%:Collecting data...%></em>
-				</div>
 			</div>
 		</div>
 	</div>
